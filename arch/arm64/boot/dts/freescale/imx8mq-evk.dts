@@ -155,6 +155,17 @@
 		audio-cpu = <&spdif2>;
 		audio-codec = <&hdmi_arc_in>;
 	};
+
+	hdmi_connector: connector {
+		compatible = "hdmi-connector";
+		label = "X11";
+		type = "a";
+
+		port {
+			hdmi_connector_in: endpoint {
+			};
+		};
+	};
 };
 
 &A53_0 {
@@ -239,6 +250,32 @@
 		gpio-hog;
 		gpios = <29 GPIO_ACTIVE_HIGH>;
 		output-high;
+	};
+};
+
+&dcss {
+	status = "okay";
+};
+
+&hdmi_connector {
+	port {
+		hdmi_connector_in: endpoint {
+			remote-endpoint = <&mhdp_out>;
+		};
+	};
+};
+
+&mhdp {
+	status = "okay";
+	ports {
+		port@1 {
+			reg = <1>;
+
+			mhdp_out: endpoint {
+				remote-endpoint = <&hdmi_connector_in>;
+				data-lanes = <0 1 2 3>;
+			};
+		};
 	};
 };
 
