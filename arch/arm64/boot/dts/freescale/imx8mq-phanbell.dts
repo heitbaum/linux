@@ -130,6 +130,17 @@
 			sound-dai = <&header_codec>;
 		};
 	};
+
+	hdmi_connector: connector {
+		compatible = "hdmi-connector";
+		label = "X11";
+		type = "a";
+
+		port {
+			hdmi_connector_in: endpoint {
+			};
+		};
+	};
 };
 
 &A53_0 {
@@ -191,6 +202,32 @@
 		map4 {
 			trip = <&fan_toggle0>;
 			cooling-device = <&fan 0 1>;
+		};
+	};
+};
+
+&dcss {
+	status = "okay";
+};
+
+&hdmi_connector {
+	port {
+		hdmi_connector_in: endpoint {
+			remote-endpoint = <&mhdp_out>;
+		};
+	};
+};
+
+&mhdp {
+	status = "okay";
+	ports {
+		port@1 {
+			reg = <1>;
+
+			mhdp_out: endpoint {
+				remote-endpoint = <&hdmi_connector_in>;
+				data-lanes = <0 1 2 3>;
+			};
 		};
 	};
 };
