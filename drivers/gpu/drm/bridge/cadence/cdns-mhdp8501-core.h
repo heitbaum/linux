@@ -172,6 +172,16 @@
 #define DP_AUX_MAIN_TIMER		0x2860
 #define DP_AUX_AFE_OUT			0x2864
 
+/* source aif addr */
+#define AUDIO_SRC_CNTL			0x30000
+#define AUDIO_SRC_CNFG			0x30004
+#define COM_CH_STTS_BITS		0x30008
+#define STTS_BIT_CH(x)			(0x3000c + ((x) << 2))
+#define SPDIF_CTRL_ADDR			0x3004c
+#define SMPL2PKT_CNTL			0x30080
+#define SMPL2PKT_CNFG			0x30084
+#define FIFO_CNTL			0x30088
+
 /* source pif addr */
 #define SOURCE_PIF_WR_ADDR		0x30800
 #define SOURCE_PIF_WR_REQ		0x30804
@@ -256,6 +266,20 @@
 #define F_DATA_WR(x)			(x)
 #define F_WR_ADDR(x)			(((x) & ((1 << 4) - 1)) << 0)
 #define F_HOST_WR(x)			(((x) & ((1 << 1) - 1)) << 0)
+
+/* audio */
+#define AUDIO_SW_RST			BIT(0)
+#define I2S_DEC_START			BIT(1)
+#define SMPL2PKT_EN			BIT(1)
+#define SYNC_WR_TO_CH_ZERO		BIT(1)
+#define TRANS_SMPL_WIDTH_32		(2 << 11)
+#define AUDIO_CH_NUM(x)			((((x) - 1) & 0x1f) << 2)
+#define CFG_SUB_PCKT_NUM(x)		((((x) - 1) & 0x7) << 11)
+#define I2S_DEC_PORT_EN(x)		(((x) & 0xf) << 17)
+#define MAX_NUM_CH(x)			(((x) & 0x1f) - 1)
+#define NUM_OF_I2S_PORTS(x)		((((x) / 2 - 1) & 0x3) << 5)
+#define ORIGINAL_SAMP_FREQ(x)		(((x) & 0xf) << 24)
+#define SAMPLING_FREQ(x)		(((x) & 0xf) << 16)
 
 /* Reference cycles when using lane clock as reference */
 #define LANE_REF_CYC			0x8000
@@ -388,4 +412,14 @@ void cdns_dp_check_link_state(struct cdns_mhdp8501_device *mhdp);
 
 void cdns_hdmi_handle_hotplug(struct cdns_mhdp8501_device *mhdp);
 struct i2c_adapter *cdns_hdmi_i2c_adapter(struct cdns_mhdp8501_device *mhdp);
+
+struct hdmi_codec_daifmt;
+struct hdmi_codec_params;
+
+int cdns_hdmi_audio_prepare(struct drm_bridge *bridge,
+			    struct drm_connector *connector,
+			    struct hdmi_codec_daifmt *fmt,
+			    struct hdmi_codec_params *hparms);
+void cdns_hdmi_audio_shutdown(struct drm_bridge *bridge,
+			      struct drm_connector *connector);
 #endif
