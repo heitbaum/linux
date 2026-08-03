@@ -56,7 +56,7 @@ config DRM_CDNS_MHDP8501
 	select DRM_PANEL_BRIDGE
 	select DRM_DISPLAY_DP_HELPER
 	select DRM_DISPLAY_HELPER
-	select DRM_CDNS_AUDIO
+	select SND_SOC_HDMI_CODEC if SND_SOC
 	select CDNS_MHDP_HELPER
 	depends on OF
 	help
