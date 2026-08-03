@@ -776,6 +776,21 @@ static int cdns_hdmi_bridge_write_hdmi_infoframe(struct drm_bridge *bridge,
 	return 0;
 }
 
+static int cdns_hdmi_bridge_clear_audio_infoframe(struct drm_bridge *bridge)
+{
+	struct cdns_mhdp8501_device *mhdp = bridge_to_mhdp(bridge);
+	cdns_hdmi_clear_infoframe(mhdp, 3, HDMI_INFOFRAME_TYPE_AUDIO);
+	return 0;
+}
+
+static int cdns_hdmi_bridge_write_audio_infoframe(struct drm_bridge *bridge,
+					    const u8 *buffer, size_t len)
+{
+	struct cdns_mhdp8501_device *mhdp = bridge_to_mhdp(bridge);
+	cdns_hdmi_config_infoframe(mhdp, 3, len, buffer, HDMI_INFOFRAME_TYPE_AUDIO);
+	return 0;
+}
+
 static int cdns_hdmi_bridge_atomic_check(struct drm_bridge *bridge,
 					 struct drm_bridge_state *bridge_state,
 					 struct drm_crtc_state *crtc_state,
@@ -801,5 +816,9 @@ const struct drm_bridge_funcs cdns_hdmi_bridge_funcs = {
 	.hdmi_write_avi_infoframe = cdns_hdmi_bridge_write_avi_infoframe,
 	.hdmi_clear_spd_infoframe = cdns_hdmi_bridge_clear_spd_infoframe,
 	.hdmi_write_spd_infoframe = cdns_hdmi_bridge_write_spd_infoframe,
+	.hdmi_clear_audio_infoframe = cdns_hdmi_bridge_clear_audio_infoframe,
+	.hdmi_write_audio_infoframe = cdns_hdmi_bridge_write_audio_infoframe,
+	.hdmi_audio_prepare = cdns_hdmi_audio_prepare,
+	.hdmi_audio_shutdown = cdns_hdmi_audio_shutdown,
 	.hdmi_tmds_char_rate_valid = cdns_hdmi_tmds_char_rate_valid,
 };

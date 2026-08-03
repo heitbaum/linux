@@ -203,10 +203,14 @@ static int cdns_mhdp8501_add_bridge(struct cdns_mhdp8501_device *mhdp)
 			   DRM_BRIDGE_OP_HPD;
 
 	if (mhdp->bridge_type == DRM_MODE_CONNECTOR_HDMIA) {
-		mhdp->bridge.ops |= DRM_BRIDGE_OP_HDMI;
+		mhdp->bridge.ops |= DRM_BRIDGE_OP_HDMI | DRM_BRIDGE_OP_HDMI_SPD_INFOFRAME |
+				    DRM_BRIDGE_OP_HDMI_AUDIO;
 		mhdp->bridge.ddc = cdns_hdmi_i2c_adapter(mhdp);
 		if (IS_ERR(mhdp->bridge.ddc))
 			return PTR_ERR(mhdp->bridge.ddc);
+		mhdp->bridge.hdmi_audio_dev = mhdp->dev;
+		mhdp->bridge.hdmi_audio_max_i2s_playback_channels = 8;
+		mhdp->bridge.hdmi_audio_dai_port = -1;
 	}
 
 	drm_bridge_add(&mhdp->bridge);
