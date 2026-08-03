@@ -1614,6 +1614,7 @@
 				interrupt-names = "plug_in", "plug_out";
 				clocks = <&clk IMX8MQ_CLK_DISP_APB_ROOT>;
 				phys = <&mdhp_phy>;
+				#sound-dai-cells = <0>;
 				status = "disabled";
 
 				ports {
