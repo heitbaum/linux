@@ -106,6 +106,30 @@
 			sound-dai = <&rt5645>;
 		};
 	};
+
+	header_codec: spdif-transmitter {
+		compatible = "linux,spdif-dit";
+		#sound-dai-cells = <0>;
+	};
+
+	sound-header {
+		compatible = "simple-audio-card";
+		simple-audio-card,name = "40-pin Header";
+		simple-audio-card,format = "i2s";
+		simple-audio-card,mclk-fs = <256>;
+
+		/* 32 bit slots, for the same reason as the analog card */
+		simple-audio-card,cpu {
+			sound-dai = <&sai1>;
+			system-clock-direction-out;
+			dai-tdm-slot-num = <2>;
+			dai-tdm-slot-width = <32>;
+		};
+
+		simple-audio-card,codec {
+			sound-dai = <&header_codec>;
+		};
+	};
 };
 
 &A53_0 {
@@ -427,6 +451,27 @@
 	status = "okay";
 };
 
+&sai1 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_sai1>;
+	/*
+	 * pll8k and pll11k let fsl_sai move the mclk between the two
+	 * audio PLL families, so 44.1 kHz rates work as well as 48 kHz.
+	 */
+	clocks = <&clk IMX8MQ_CLK_SAI1_IPG>,
+		 <&clk IMX8MQ_CLK_SAI1_ROOT>,
+		 <&clk IMX8MQ_CLK_DUMMY>, <&clk IMX8MQ_CLK_DUMMY>,
+		 <&clk IMX8MQ_AUDIO_PLL1_OUT>,
+		 <&clk IMX8MQ_AUDIO_PLL2_OUT>;
+	clock-names = "bus", "mclk1", "mclk2", "mclk3",
+		      "pll8k", "pll11k";
+	assigned-clocks = <&clk IMX8MQ_CLK_SAI1>;
+	assigned-clock-parents = <&clk IMX8MQ_AUDIO_PLL1_OUT>;
+	assigned-clock-rates = <24576000>;
+	fsl,sai-mclk-direction-output;
+	status = "okay";
+};
+
 &sai2 {
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_sai2>;
@@ -603,6 +648,16 @@
 	pinctrl_pmic: pmicirqgrp {
 		fsl,pins = <
 			MX8MQ_IOMUXC_GPIO1_IO03_GPIO1_IO3	0x41
+		>;
+	};
+
+	pinctrl_sai1: sai1grp {
+		fsl,pins = <
+			MX8MQ_IOMUXC_SAI1_MCLK_SAI1_MCLK		0xd6
+			MX8MQ_IOMUXC_SAI1_TXFS_SAI1_TX_SYNC		0xd6
+			MX8MQ_IOMUXC_SAI1_TXC_SAI1_TX_BCLK		0xd6
+			MX8MQ_IOMUXC_SAI1_TXD0_SAI1_TX_DATA0		0xd6
+			MX8MQ_IOMUXC_SAI1_RXD0_SAI1_RX_DATA0		0xd6
 		>;
 	};
 
