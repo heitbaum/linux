@@ -133,7 +133,7 @@ static void hotplug_work_func(struct work_struct *work)
 	} else {
 		/* HPD state read failed, retry to avoid losing HPD */
 		dev_warn(mhdp->dev, "failed to read HPD state, retrying\n");
-		mod_delayed_work(system_wq, &mhdp->hotplug_work,
+		mod_delayed_work(system_percpu_wq, &mhdp->hotplug_work,
 				 msecs_to_jiffies(HOTPLUG_DEBOUNCE_MS));
 	}
 }
@@ -144,7 +144,7 @@ static irqreturn_t cdns_mhdp8501_irq_thread(int irq, void *data)
 
 	disable_irq_nosync(irq);
 
-	mod_delayed_work(system_wq, &mhdp->hotplug_work,
+	mod_delayed_work(system_percpu_wq, &mhdp->hotplug_work,
 			 msecs_to_jiffies(HOTPLUG_DEBOUNCE_MS));
 
 	return IRQ_HANDLED;
