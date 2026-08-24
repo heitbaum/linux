@@ -159,6 +159,10 @@
 	pinctrl-0 = <&hdmi_cec>;
 };
 
+&hdmi_sound {
+	status = "okay";
+};
+
 &i2c0 {
 	clock-frequency = <400000>;
 	i2c-scl-falling-time-ns = <30>;
@@ -451,6 +455,10 @@
 &i2c3 {
 	i2c-scl-rising-time-ns = <450>;
 	i2c-scl-falling-time-ns = <15>;
+	status = "okay";
+};
+
+&i2s2 {
 	status = "okay";
 };
 
