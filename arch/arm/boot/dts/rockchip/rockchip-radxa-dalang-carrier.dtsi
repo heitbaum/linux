@@ -112,8 +112,14 @@
 
 &uart0 {
 	pinctrl-names = "default";
-	pinctrl-0 = <&uart0_xfer &uart0_cts>;
+	pinctrl-0 = <&uart0_xfer &uart0_cts &uart0_rts>;
 	status = "okay";
+
+	bluetooth: bluetooth {
+		clocks = <&hym8563>; /* RTC_CLKO, E-key pin 52 */
+		clock-names = "lpo";
+		status = "disabled";
+	};
 };
 
 &uart2 {
