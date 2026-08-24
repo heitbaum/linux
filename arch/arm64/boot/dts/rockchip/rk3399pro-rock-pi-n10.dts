@@ -19,3 +19,8 @@
 		stdout-path = "serial2:1500000n8";
 	};
 };
+
+&bluetooth {
+	compatible = "brcm,bcm4329-bt";
+	status = "okay";
+};
