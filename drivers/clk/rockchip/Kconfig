@@ -157,3 +157,11 @@ config CLK_RK3588
 	  Build the driver for RK3588 Clock Driver.
 
 endif
+
+config CLK_RK1808
+	bool "Rockchip RK1808 clock controller support"
+	depends on ARCH_ROCKCHIP || COMPILE_TEST
+	default y
+	select COMMON_CLK_ROCKCHIP
+	help
+	  Build the driver for RK1808 Clock Driver.
