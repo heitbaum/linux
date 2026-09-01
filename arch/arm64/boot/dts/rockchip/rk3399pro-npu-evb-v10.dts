@@ -1,0 +1,195 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+/*
+ * Copyright (c) 2018 Fuzhou Rockchip Electronics Co., Ltd
+ */
+
+/dts-v1/;
+#include <dt-bindings/gpio/gpio.h>
+#include <dt-bindings/pinctrl/rockchip.h>
+#include "rk3399pro-npu.dtsi"
+
+/ {
+	model = "Rockchip RK3399pro-npu EVB V10 Board";
+	compatible = "rockchip,rk3399pro-npu-evb-v10", "rockchip,rk3399pro-npu";
+
+	chosen {
+		bootargs = "earlycon=uart8250,mmio32,0xff550000 console=ttyS2,1500000 init=/init kpti=0";
+	};
+
+	keys: gpio-keys {
+		compatible = "gpio-keys";
+		pinctrl-names = "default";
+		pinctrl-0 = <&pwr_key>;
+
+		power {
+			gpios = <&gpio0 RK_PB0 GPIO_ACTIVE_HIGH>;
+			label = "GPIO Power";
+			linux,code = <116>;
+			wakeup-source;
+		};
+	};
+
+	fiq-debugger {
+		compatible = "rockchip,fiq-debugger";
+		rockchip,serial-id = <2>;
+		rockchip,wake-irq = <0>;
+		/* If enable uart uses irq instead of fiq */
+		rockchip,irq-mode-enable = <0>;
+		rockchip,baudrate = <1500000>;  /* Only 115200 and 1500000 */
+		interrupts = <GIC_SPI 242 IRQ_TYPE_LEVEL_HIGH>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&uart2m0_xfer>;
+		status = "okay";
+	};
+
+	vdd_cpu: vdd-cpu {
+		compatible = "regulator-fixed";
+		regulator-name = "vdd_cpu";
+		regulator-always-on;
+		regulator-boot-on;
+		regulator-min-microvolt = <850000>;
+		regulator-max-microvolt = <850000>;
+	};
+
+	vcc5v0_sys: vcc5v0-sys {
+		compatible = "regulator-fixed";
+		regulator-name = "vcc5v0_sys";
+		regulator-always-on;
+		regulator-boot-on;
+		regulator-min-microvolt = <5000000>;
+		regulator-max-microvolt = <5000000>;
+	};
+};
+
+&cpu0 {
+	cpu-supply = <&vdd_cpu>;
+};
+
+&cpu1 {
+	cpu-supply = <&vdd_cpu>;
+};
+
+&i2c1 {
+	status = "okay";
+
+	vdd_npu: tcs4525@1c {
+		compatible = "tcs,tcs4525";
+		reg = <0x1c>;
+		vin-supply = <&vcc5v0_sys>;
+		regulator-compatible = "fan53555-reg";
+		pinctrl-0 = <&vsel_gpio>;
+		vsel-gpios = <&gpio0 RK_PC6 GPIO_ACTIVE_HIGH>;
+		regulator-name = "vdd_npu";
+		regulator-min-microvolt = <750000>;
+		regulator-max-microvolt = <800000>;
+		regulator-ramp-delay = <2300>;
+		fcs,suspend-voltage-selector = <1>;
+		regulator-always-on;
+		regulator-boot-on;
+		regulator-initial-state = <3>;
+		regulator-state-mem {
+			regulator-off-in-suspend;
+		};
+	};
+};
+
+&npu {
+	npu-supply = <&vdd_npu>;
+	status = "okay";
+};
+
+&combphy {
+	status = "okay";
+};
+
+&u2phy {
+	status = "okay";
+};
+
+&u2phy_otg {
+	status = "okay";
+};
+
+&usbdrd3 {
+	status = "okay";
+};
+
+&usbdrd_dwc3 {
+	status = "okay";
+};
+
+&tsadc {
+	rockchip,hw-tshut-mode = <1>; /* tshut mode 0:CRU 1:GPIO */
+	rockchip,hw-tshut-polarity = <1>; /* tshut polarity 0:LOW 1:HIGH */
+	pinctrl-names = "init", "default";
+	pinctrl-0 = <&tsadc_otp_gpio>;
+	pinctrl-1 = <&tsadc_otp_out>;
+	status = "okay";
+};
+
+&pinctrl {
+	vdd-npu-sleep {
+		vsel_gpio: vsel-gpio {
+			rockchip,pins =
+				<0 RK_PC6 RK_FUNC_GPIO &pcfg_pull_down>;
+		};
+	};
+
+	pwr-key-grp {
+		pwr_key: pwr-key {
+			rockchip,pins =
+				<0 RK_PB0 RK_FUNC_GPIO &pcfg_pull_none>;
+		};
+	};
+};
+
+/*
+ * Give the usb3 otg reset to the combphy, not to the dwc3 wrapper.
+ *
+ * Two nodes ask for <&cru SRST_USB3_OTG_A>: usbdrd3 as "usb3-otg" and combphy
+ * as "otg-rst". Both ask exclusively - dwc3-of-simple through
+ * of_reset_control_array_get(np, false, ...), the phy through
+ * devm_reset_control_get() - and 6.1's reset core refuses the second caller
+ * with a WARN at drivers/reset/core.c:766 and -EBUSY. 4.4 and 5.10 allowed the
+ * duplicate silently, which is why the same device tree works there.
+ *
+ * Whoever loses depends on probe order. Built in, the combphy wins and the dwc3
+ * wrapper gets nothing, so no gadget comes up at all - no shell, no transfer,
+ * nothing to read on a die whose only console is that gadget. As a module
+ * loaded by hand the combphy loses instead, which is why that looked fine.
+ *
+ * The phy is the one that needs it. phy_u3_init asserts the controller reset,
+ * brings the PLL up, and deasserts it once lane0 is ready; without it the PLL
+ * never locks, phy_init returns -110 and dwc3 fails with "failed to initialize
+ * core" anyway. Dropping it from the phy was tried first and produced exactly
+ * that. dwc3-of-simple asks with optional=true, so it is happy with none, and
+ * the phy hands the controller back deasserted before dwc3's core init runs -
+ * which is the order 4.4 ends up in.
+ */
+&usbdrd3 {
+	/delete-property/ resets;
+	/delete-property/ reset-names;
+};
+
+/*
+ * The console.
+ *
+ * rk3399pro-npu.dtsi leaves uart2 status = "disabled", and the vendor board dts
+ * never enables it - what it enables is the fiq-debugger node, which borrows the
+ * same pins through pinctrl-0 = <&uart2m0_xfer> and rockchip,serial-id = <2>.
+ * Mainline has no fiq debugger, so without this the uart is simply off: no
+ * "ttyS2 at MMIO" line, no /dev/console, and init dies with
+ * "Attempted to kill init!".
+ *
+ * Watch out for the near miss when checking whether this is already present:
+ * "&uart2" is a substring of "&uart2m0_xfer", so a plain `in` test says yes on
+ * a dts that has only the pinctrl reference. Match the node reference itself.
+ *
+ * pinctrl is dropped in the same block: mainline's pinctrl-rockchip did not
+ * know this soc when the console was first brought up, and u-boot has already
+ * muxed these pins, which is why earlycon works on them. With the rk1808 data
+ * now installed the state could be restored, but the console has no need of it.
+ */
+&uart2 {
+	status = "okay";
+};
