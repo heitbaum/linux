@@ -144,3 +144,11 @@ config PHY_ROCKCHIP_USBDP
 
 	  To compile this driver as a module, choose M here: the module
 	  will be called phy-rockchip-usbdp
+
+config PHY_ROCKCHIP_INNO_COMBPHY
+	tristate "Rockchip INNO USB 3.0 and PCIe COMBPHY Driver"
+	depends on (ARCH_ROCKCHIP && OF) || COMPILE_TEST
+	select GENERIC_PHY
+	help
+	  Enable this to support the Rockchip SoCs COMBPHY.
+	  If unsure, say N.
