@@ -215,6 +215,28 @@ struct clk;
 #define RV1126B_VCPCLKGATE_CON(x)	((x) * 0x4 + 0x800 + RV1126B_VCPCRU_BASE)
 #define RV1126B_VCPSOFTRST_CON(x)	((x) * 0x4 + 0xa00 + RV1126B_VCPCRU_BASE)
 
+/* register positions for RK1808, shared with the RK2928 family layout */
+#define RK1808_PLL_CON(x)		((x) * 0x4)
+#define RK1808_MODE_CON			0xa0
+#define RK1808_MISC_CON			0xa4
+#define RK1808_MISC1_CON		0xa8
+#define RK1808_GLB_SRST_FST		0xb8
+#define RK1808_GLB_SRST_SND		0xbc
+#define RK1808_CLKSEL_CON(x)		((x) * 0x4 + 0x100)
+#define RK1808_CLKGATE_CON(x)		((x) * 0x4 + 0x230)
+#define RK1808_SOFTRST_CON(x)		((x) * 0x4 + 0x300)
+#define RK1808_SDMMC_CON0		0x380
+#define RK1808_SDMMC_CON1		0x384
+#define RK1808_SDIO_CON0		0x388
+#define RK1808_SDIO_CON1		0x38c
+#define RK1808_EMMC_CON0		0x390
+#define RK1808_EMMC_CON1		0x394
+
+#define RK1808_PMU_PLL_CON(x)		((x) * 0x4 + 0x4000)
+#define RK1808_PMU_MODE_CON		0x4020
+#define RK1808_PMU_CLKSEL_CON(x)	((x) * 0x4 + 0x4040)
+#define RK1808_PMU_CLKGATE_CON(x)	((x) * 0x4 + 0x4080)
+
 #define RK2928_PLL_CON(x)		((x) * 0x4)
 #define RK2928_MODE_CON		0x40
 #define RK2928_CLKSEL_CON(x)	((x) * 0x4 + 0x44)
